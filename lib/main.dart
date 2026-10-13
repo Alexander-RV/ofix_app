@@ -5,6 +5,7 @@ import 'pages/client_home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/worker_home_page.dart';
 import 'pages/forgot_password_page.dart';
+import 'pages/reset_password_page.dart';
 
 void main() {
   runApp(const OfixApp());
@@ -19,11 +20,33 @@ class OfixApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'OFIX',
       theme: OfixTheme.theme,
-      home: const OfixWelcomePage(),
+      initialRoute: Uri.base.toString(),
+      onGenerateRoute: (settings) {
+        final uri = Uri.tryParse(
+          settings.name ?? '/',
+        );
+
+        if (uri != null &&
+            uri.path == '/reset-password') {
+          final token = uri.queryParameters['token'];
+
+          if (token != null &&
+              token.isNotEmpty) {
+            return MaterialPageRoute(
+              builder: (_) => ResetPasswordPage(
+                token: token,
+              ),
+            );
+          }
+        }
+
+        return MaterialPageRoute(
+          builder: (_) => const OfixWelcomePage(),
+        );
+      },
     );
   }
 }
-
 // Bienvenida
 class OfixWelcomePage extends StatelessWidget {
   const OfixWelcomePage({super.key});

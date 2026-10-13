@@ -340,4 +340,33 @@ class ApiService {
       'data': data,
     };
   }
+
+  static Future<Map<String, dynamic>> restablecerPassword(
+    String token,
+    String nuevaPassword,
+    String confirmarPassword,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/auth/reset-password'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'token': token,
+        'nuevaPassword': nuevaPassword,
+        'confirmarPassword': confirmarPassword,
+      }),
+    );
+
+    final body = response.body.trim();
+
+    final data = body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(body);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
 }
