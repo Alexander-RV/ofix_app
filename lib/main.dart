@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/worker_home_page.dart';
 import 'pages/forgot_password_page.dart';
 import 'pages/reset_password_page.dart';
+import 'pages/register_page.dart';
 
 void main() {
   runApp(const OfixApp());
@@ -175,7 +176,18 @@ class OfixWelcomePage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final creada = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                      if (creada == true && context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const OfixLoginPage()),
+                        );
+                      }
+                    },
                     child: const Text(
                       'Crear una cuenta',
                       style: TextStyle(
@@ -408,7 +420,12 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
 
                 Center(
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                    },
                     child: const Text(
                       '¿No tienes una cuenta? Crear cuenta',
                     ),

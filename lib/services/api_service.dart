@@ -369,4 +369,60 @@ class ApiService {
       'data': data,
     };
   }
+
+  // Registro público: cliente o profesional.
+  static Future<Map<String, dynamic>> registrarUsuario({
+    required String nombre,
+    required String apellido,
+    required String email,
+    required String password,
+    required String rol, // 'CLIENTE' o 'TRABAJADOR'
+    String? profesion,
+    int? anosExperiencia,
+    String? descripcionProfesional,
+    String? zonaTrabajo,
+    List<int>? categoriaIds,
+  }) async {
+    final body = <String, dynamic>{
+      'nombre': nombre,
+      'apellido': apellido,
+      'email': email,
+      'password': password,
+      'rol': rol,
+    };
+
+    if (rol == 'TRABAJADOR') {
+      body['profesion'] = profesion;
+      body['anosExperiencia'] = anosExperiencia;
+      body['descripcionProfesional'] = descripcionProfesional;
+      body['zonaTrabajo'] = zonaTrabajo;
+      body['categoriaIds'] = categoriaIds;
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/usuarios'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    return {
+      'statusCode': response.statusCode,
+      'data': jsonDecode(response.body),
+    };
+  }
+
+  // Categorías activas para el formulario de registro (endpoint público).
+  static Future<List<Map<String, dynamic>>> listarCategoriasPublicas() async {
+    final response = await http.get(Uri.parse('$baseUrl/api/categorias'));
+
+    if (response.statusCode != 200) {
+      throw Exception('No se pudieron cargar las categorías');
+    }
+
+    final lista = jsonDecode(response.body) as List<dynamic>;
+    return lista
+        .cast<Map<String, dynamic>>()
+        .where((c) => c['activo'] == true)
+        .toList();
+  }
 }
