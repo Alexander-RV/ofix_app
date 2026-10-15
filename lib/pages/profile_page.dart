@@ -180,6 +180,44 @@ class _ProfilePageState extends State<ProfilePage> {
                       : 'Inactiva',
                 ),
 
+                if (perfil['rol'] == 'TRABAJADOR') ...[
+                  _buildInfoCard(
+                    icon: Icons.handyman_outlined,
+                    title: 'Profesión u oficio',
+                    value: perfil['profesion'] ?? '',
+                  ),
+
+                  _buildInfoCard(
+                    icon: Icons.timeline,
+                    title: 'Años de experiencia',
+                    value: '${perfil['anosExperiencia'] ?? 0}',
+                  ),
+
+                  _buildInfoCard(
+                    icon: Icons.location_on_outlined,
+                    title: 'Zona de trabajo',
+                    value: perfil['zonaTrabajo'] ?? '',
+                  ),
+
+                  if ((perfil['descripcionProfesional'] ?? '')
+                      .toString()
+                      .isNotEmpty)
+                    _buildInfoCard(
+                      icon: Icons.notes_outlined,
+                      title: 'Descripción',
+                      value: perfil['descripcionProfesional'],
+                    ),
+
+                  _buildInfoCard(
+                    icon: Icons.category_outlined,
+                    title: 'Categorías de servicio',
+                    value: ((perfil['categorias'] as List?) ?? [])
+                        .join(', '),
+                  ),
+                ],
+
+
+
                 const SizedBox(height: 20),
 
                 SizedBox(

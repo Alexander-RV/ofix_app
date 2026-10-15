@@ -254,9 +254,29 @@ class ApiService {
   static Future<Map<String, dynamic>> actualizarMiPerfil(
     String nombre,
     String apellido,
-    String email,
-  ) async {
+    String email, {
+    String? profesion,
+    int? anosExperiencia,
+    String? descripcionProfesional,
+    String? zonaTrabajo,
+    List<int>? categoriaIds
+    
+  }) async {
     final token = await obtenerToken();
+
+    final body = <String, dynamic>{
+      'nombre': nombre,
+      'apellido': apellido,
+      'email': email,
+    };
+
+    if (profesion != null) {
+      body['profesion'] = profesion;
+      body['anosExperiencia'] = anosExperiencia;
+      body['descripcionProfesional'] = descripcionProfesional;
+      body['zonaTrabajo'] = zonaTrabajo;
+      body['categoriaIds'] = categoriaIds;
+    }
 
     final response = await http.put(
       Uri.parse('$baseUrl/api/usuarios/me'),
@@ -264,18 +284,14 @@ class ApiService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'nombre': nombre,
-        'apellido': apellido,
-        'email': email,
-      }),
+      body: jsonEncode(body),
     );
 
-    final body = response.body.trim();
+    final respuesta = response.body.trim();
 
-    final data = body.isEmpty
+    final data = respuesta.isEmpty
         ? <String, dynamic>{}
-        : jsonDecode(body);
+        : jsonDecode(respuesta);
 
     return {
       'statusCode': response.statusCode,
