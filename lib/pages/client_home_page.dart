@@ -65,13 +65,21 @@ class _ClientHomePageState extends State<ClientHomePage> {
             const SizedBox(height: 24),
 
             GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const CreateServicePage(),
                   ),
                 );
+
+                if (!mounted) {
+                  return;
+                }
+
+                setState(() {
+                  serviciosFuture = cargarServicios();
+                });
               },
               child: Container(
                 width: double.infinity,

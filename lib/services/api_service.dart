@@ -189,9 +189,27 @@ class ApiService {
     String titulo,
     String descripcion,
     String direccion,
-    int categoriaId,
-  ) async {
+    int categoriaId, {
+    DateTime? fechaProgramada,
+    int? presupuesto,  
+  
+  }) async {
     final token = await obtenerToken();
+
+    final body = <String, dynamic>{
+      'titulo': titulo,
+      'descripcion': descripcion,
+      'direccion': direccion,
+      'categoriaId': categoriaId
+    };
+
+    if (fechaProgramada != null) {
+      body['fechaProgramada'] = fechaProgramada.toIso8601String();
+    }
+
+    if (presupuesto != null) {
+      body['presupuesto'] = presupuesto;
+    }
 
     final response = await http.post(
       Uri.parse('$baseUrl/api/servicios'),
@@ -199,19 +217,14 @@ class ApiService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'titulo': titulo,
-        'descripcion': descripcion,
-        'direccion': direccion,
-        'categoriaId': categoriaId,
-      }),
+      body: jsonEncode(body),
     );
 
-    final body = response.body.trim();
+    final respuesta = response.body.trim();
 
-    final data = body.isEmpty
+    final data = respuesta.isEmpty
         ? <String, dynamic>{}
-        : jsonDecode(body);
+        : jsonDecode(respuesta);
 
     return {
       'statusCode': response.statusCode,
