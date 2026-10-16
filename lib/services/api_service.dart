@@ -21,7 +21,10 @@ class ApiService {
       }),
     );
 
-    final data = jsonDecode(response.body);
+    final cuerpo = response.body.trim();
+    final data = cuerpo.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(cuerpo);
 
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();

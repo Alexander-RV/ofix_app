@@ -27,6 +27,7 @@ class OfixApp extends StatelessWidget {
           settings.name ?? '/',
         );
 
+        // Enlace del correo de recuperación de contraseña.
         if (uri != null &&
             uri.path == '/reset-password') {
           final token = uri.queryParameters['token'];
@@ -48,6 +49,7 @@ class OfixApp extends StatelessWidget {
     );
   }
 }
+
 // Bienvenida
 class OfixWelcomePage extends StatelessWidget {
   const OfixWelcomePage({super.key});
@@ -148,7 +150,7 @@ class OfixWelcomePage extends StatelessWidget {
 
                 const SizedBox(height: 45),
 
-                // Iniciar sesión
+                // Iniciar sesión (solo abre la pantalla de login)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -181,6 +183,8 @@ class OfixWelcomePage extends StatelessWidget {
                         context,
                         MaterialPageRoute(builder: (_) => const RegisterPage()),
                       );
+
+                      // Si se registró, lo llevamos al login.
                       if (creada == true && context.mounted) {
                         Navigator.push(
                           context,
@@ -231,6 +235,9 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
 
   final TextEditingController passwordController = TextEditingController();
 
+  // true mientras se espera la respuesta del servidor.
+  bool cargando = false;
+
   // Libera los controllers.
   @override
   void dispose() {
@@ -240,6 +247,7 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
     super.dispose();
   }
 
+  // Según el rol guardado en el login, abre el inicio que corresponde.
   Future<void> _irAlHome() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -263,6 +271,78 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
           builder: (_) => const ClientHomePage(),
         ),
       );
+    }
+  }
+
+  // Valida los campos, llama al backend y muestra el mensaje adecuado.
+  Future<void> _iniciarSesion() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Validación local antes de llamar al servidor.
+    if (email.isEmpty || password.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Ingresa tu correo y tu contraseña'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      cargando = true;
+    });
+
+    try {
+      final resultado = await ApiService.login(email, password);
+
+      if (!mounted) {
+        return;
+      }
+
+      final codigo = resultado['statusCode'];
+
+      // Login correcto: entramos al inicio.
+      if (codigo == 200) {
+        await _irAlHome();
+        return;
+      }
+
+      // 401 = credenciales malas, 400 = cuenta suspendida o datos inválidos.
+      // En ambos casos el backend manda el texto en "mensaje".
+      final data = resultado['data'];
+      String mensaje;
+
+      if ((codigo == 401 || codigo == 400) &&
+          data is Map &&
+          data['mensaje'] != null) {
+        mensaje = data['mensaje'].toString();
+      } else {
+        mensaje = 'Ocurrió un problema en el servidor. Inténtalo de nuevo.';
+      }
+
+      messenger.showSnackBar(SnackBar(content: Text(mensaje)));
+    } catch (_) {
+      // Sin conexión o servidor apagado.
+      if (!mounted) {
+        return;
+      }
+
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se pudo conectar con el servidor. Revisa tu conexión.',
+          ),
+        ),
+      );
+    } finally {
+      // Siempre se vuelve a habilitar el botón.
+      if (mounted) {
+        setState(() {
+          cargando = false;
+        });
+      }
     }
   }
 
@@ -342,6 +422,13 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
                 TextField(
                   controller: passwordController,
                   obscureText: true,
+                  // Enter en el teclado también inicia sesión.
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) {
+                    if (!cargando) {
+                      _iniciarSesion();
+                    }
+                  },
                   decoration: InputDecoration(
                     hintText: 'Ingresa tu contraseña',
                     prefixIcon: const Icon(
@@ -365,7 +452,7 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const ForgotPasswordPage(), 
+                          builder: (_) => const ForgotPasswordPage(),
                         ),
                       );
                     },
@@ -377,42 +464,27 @@ class _OfixLoginPageState extends State<OfixLoginPage> {
 
                 const SizedBox(height: 20),
 
-                // Botón iniciar sesión
+                // Botón iniciar sesión (con spinner mientras carga)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      final email = emailController.text.trim();
-                      final password = passwordController.text;
-
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      final resultado =
-                          await ApiService.login(email, password);
-
-                      if (!mounted) {
-                        return;
-                      }
-
-                      if (resultado['statusCode'] == 200) {
-                        _irAlHome();
-                      } else {
-                        messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Correo o contraseña incorrectos',
+                    onPressed: cargando ? null : _iniciarSesion,
+                    child: cargando
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Iniciar sesión',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        );
-                      }
-                    },
-                    child: const Text(
-                      'Iniciar sesión',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ),
 
