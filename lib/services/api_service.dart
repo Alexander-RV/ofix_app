@@ -3,7 +3,15 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8080';
+
+  // La dirección del backend se define al ejecutar la app (--dart-define).
+  // Lo modifico para pruebas con el celular.
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'http://localhost:8080',
+  );
+
+  //static const String baseUrl = 'http://localhost:8080';
 
   // Login
   static Future<Map<String, dynamic>> login(
