@@ -105,31 +105,7 @@ class ApiService {
     };
   }
 
-  // Aceptar servicio
-  static Future<Map<String, dynamic>> aceptarServicio(
-    int servicioId,
-  ) async {
-    final token = await obtenerToken();
 
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/servicios/$servicioId/aceptar'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    final body = response.body.trim();
-
-    final data = body.isEmpty
-        ? <String, dynamic>{}
-        : jsonDecode(body);
-
-    return {
-      'statusCode': response.statusCode,
-      'data': data,
-    };
-  }
 
   // Finalizar servicio
   static Future<Map<String, dynamic>> finalizarServicio(
