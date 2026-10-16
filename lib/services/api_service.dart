@@ -454,4 +454,78 @@ class ApiService {
         .where((c) => c['activo'] == true)
         .toList();
   }
+
+  // Ofertas recibidas por un servicio (solo el cliente dueño)
+  static Future<Map<String, dynamic>> listarOfertasDeServicio(
+    int servicioId,
+  ) async {
+    final token = await obtenerToken();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/servicios/$servicioId/ofertas'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final body = response.body.trim();
+
+    final data = body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(body);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
+
+  // El cliente acepta una oferta
+  static Future<Map<String, dynamic>> aceptarOferta(int ofertaId) async {
+    final token = await obtenerToken();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/ofertas/$ofertaId/aceptar'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final body = response.body.trim();
+
+    final data = body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(body);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
+
+  // El cliente rechaza una oferta
+  static Future<Map<String, dynamic>> rechazarOferta(int ofertaId) async {
+    final token = await obtenerToken();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/ofertas/$ofertaId/rechazar'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final body = response.body.trim();
+
+    final data = body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(body);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
 }

@@ -14,21 +14,38 @@ class ClientHomePage extends StatefulWidget {
 
 class _ClientHomePageState extends State<ClientHomePage> {
   late Future<List<dynamic>> serviciosFuture;
+  String nombreUsuario ='';
 
   @override
   void initState() {
     super.initState();
     serviciosFuture = cargarServicios();
+    cargarNombre();
   }
 
   Future<List<dynamic>> cargarServicios() async {
     final resultado = await ApiService.listarServicios();
 
     if (resultado['statusCode'] != 200) {
-      throw Exception('No se pudieron cargar los servicios');
+      throw Exception('No se pudieron caragar los servicios');
+      
     }
 
     return resultado['data'];
+  }
+
+  Future<void> cargarNombre() async {
+    final resultado = await ApiService.obtenerMiPerfil();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (resultado['statusCode'] == 200) {
+      setState(() {
+        nombreUsuario = resultado['data']['nombre'] ?? '';
+      });
+    }
   }
 
   @override
@@ -43,9 +60,9 @@ class _ClientHomePageState extends State<ClientHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hola, Flutter 👋',
-              style: TextStyle(
+            Text(
+              nombreUsuario.isEmpty ? 'Hola 👋' : 'Hola, $nombreUsuario 👋',
+              style: const TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: OfixColors.textPrimary,

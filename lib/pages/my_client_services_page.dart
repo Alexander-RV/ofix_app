@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import 'service_offers_page.dart';
 
 class MyClientServicesPage extends StatefulWidget {
   const MyClientServicesPage({super.key});
@@ -220,8 +221,58 @@ class _MyClientServicesPageState extends State<MyClientServicesPage> {
             ),
           ],
 
+          if (servicio['precioAcordado'] != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(
+                  Icons.payments_outlined,
+                  size: 18,
+                  color: OfixColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Precio acordado: '
+                    '${formatearPrecio(servicio['precioAcordado'])}',
+                    style: const TextStyle(
+                      color: OfixColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+
           if (servicio['estado'] == 'PENDIENTE') ...[
             const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () async {
+                  await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ServiceOffersPage(servicio: servicio),
+                    ),
+                  );
+
+                  if (!mounted) {
+                    return;
+                  }
+
+                  setState(() {
+                    serviciosFuture = cargarServicios();
+                  });
+                },
+                icon: const Icon(Icons.local_offer_outlined),
+                label: Text(
+                  'Ver ofertas (${servicio['totalOfertas'] ?? 0})',
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
