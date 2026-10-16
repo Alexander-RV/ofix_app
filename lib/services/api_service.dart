@@ -528,4 +528,89 @@ class ApiService {
       'data': data,
     };
   }
+
+  // El profesional envía una oferta a una solicitud
+  static Future<Map<String, dynamic>> crearOferta(
+    int servicioId,
+    int precio,
+    String mensaje,
+  ) async {
+    final token = await obtenerToken();
+
+    final body = <String, dynamic>{
+      'precio': precio,
+    };
+
+    if (mensaje.isNotEmpty) {
+      body['mensaje'] = mensaje;
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/servicios/$servicioId/ofertas'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(body),
+    );
+
+    final respuesta = response.body.trim();
+
+    final data = respuesta.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(respuesta);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
+
+  // Ofertas enviadas por el profesional autenticado
+  static Future<Map<String, dynamic>> listarMisOfertas() async {
+    final token = await obtenerToken();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/ofertas/mis-ofertas'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final body = response.body.trim();
+
+    final data = body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(body);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
+
+  // El profesional retira una oferta pendiente
+  static Future<Map<String, dynamic>> retirarOferta(int ofertaId) async {
+    final token = await obtenerToken();
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/ofertas/$ofertaId/retirar'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final body = response.body.trim();
+
+    final data = body.isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(body);
+
+    return {
+      'statusCode': response.statusCode,
+      'data': data,
+    };
+  }
 }
